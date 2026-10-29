@@ -1,0 +1,36 @@
+services:
+  android:
+    image: sms-backup-android:local
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        ANDROID_SDK_LICENSES_ACCEPTED: ${ANDROID_SDK_LICENSES_ACCEPTED:-false}
+    init: true
+    user: "1000:1000"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 512
+    mem_limit: 4g
+    cpus: 2
+    volumes:
+      - type: bind
+        source: .
+        target: /source
+        read_only: true
+      - type: bind
+        source: ./artifacts
+        target: /output
+      - gradle-cache:/home/android/.gradle
+      - android-state:/home/android/.android
+    tmpfs:
+      - /workspace:rw,exec,nosuid,size=3g,uid=1000,gid=1000,mode=0700
+      - /tmp:rw,noexec,nosuid,size=1g,mode=1777
+
+volumes:
+  gradle-cache:
+  android-state:
